@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #1a1a00, #3b3000);
+      color: #fff8cc;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #fde047;
+    }
+
+    .response {
+      border: 1px solid #facc15;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: rgba(250, 204, 21, 0.1);
+    }
+
+    .name {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    .back-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #facc15;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+	.gallery-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.response {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.text-part {
+  width: 75%;
+}
+
+.photo-stack {
+  width: 25%;
+  position: relative;
+  min-height: 160px;
+}
+
+.stack-img {
+  width: 90px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  position: absolute;
+  cursor: pointer;
+  transition: 0.3s;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.stack-img:hover {
+  transform: scale(1.05);
+}
+
+.stack-img:nth-child(1) {
+  top: 0;
+  left: 0;
+  transform: rotate(-8deg);
+}
+
+.stack-img:nth-child(2) {
+  top: 20px;
+  left: 20px;
+  transform: rotate(5deg);
+}
+
+.stack-img:nth-child(3) {
+  top: 40px;
+  left: 10px;
+  transform: rotate(-3deg);
+}
+
+/* popup */
+
+.popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 20px;
+}
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(250,204,21,0.2);
+  border: 1px solid #facc15;
+  color: #fff8cc;
+  font-size: 30px;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  transition: 0.2s;
+}
+
+.nav-btn:hover {
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 0 15px #facc15;
+}
+
+.left-btn {
+  left: 30px;
+}
+
+.right-btn {
+  right: 30px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  font-size: 32px;
+  cursor: pointer;
+  color: #fff8cc;
+}
+
+.popup img {
+  max-width: 85%;
+  max-height: 85%;
+  border-radius: 20px;
+}
+
+@media (max-width: 700px) {
+
+  .nav-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 24px;
+  }
+
+  .left-btn {
+    left: 10px;
+  }
+
+  .right-btn {
+    right: 10px;
+  }
+}
+  </style>
+</head>
+
+<body>
+
+<button class="back-btn" onclick="goBack()">← Back</button>
+
+<h2>All Responses</h2>
+
+<div id="list" class="gallery-list"></div>
+
+<div id="popup" class="popup">
+
+  <button class="nav-btn left-btn" onclick="prevPhoto(event)">❮</button>
+
+  <img id="popupImg">
+
+  <button class="nav-btn right-btn" onclick="nextPhoto(event)">❯</button>
+
+  <span class="close-btn" onclick="closePopup()">✕</span>
+
+</div>
+<script src="responses.js"></script>
+<script>
+
+
+const list = document.getElementById("list");
+
+responses.forEach(res => {
+
+  const div = document.createElement("div");
+  div.className = "response";
+  const photos = res.photos || [];
+
+  div.innerHTML = `
+
+  <div class="text-part">
+
+    <div><strong>Why she’s amazing:</strong><br>${res.reason}</div>
+
+    <br>
+
+    <div><strong>Memory:</strong><br>${res.memory}</div>
+
+    <br>
+
+    <div><strong>Song:</strong><br>${res.song}</div>
+
+    <div class="name">- ${res.name}</div>
+
+  </div>
+
+  <div class="photo-stack">
+${photos.map((photo, i) => `
+  <img src="${photo}" class="stack-img"
+  onclick='openPopup(${i}, ${JSON.stringify(photos)})'>
+`).join("")}
+  `;
+
+  list.appendChild(div);
+
+});
+
+let currentPhotos = [];
+let currentIndex = 0;
+
+
+
+function openPopup(index, photos) {
+
+  currentPhotos = photos;
+  currentIndex = index;
+
+  document.getElementById("popup").style.display = "flex";
+  document.getElementById("popupImg").src = currentPhotos[currentIndex];
+}
+
+function nextPhoto(event) {
+
+  event.stopPropagation();
+
+  currentIndex++;
+
+  if (currentIndex >= currentPhotos.length) {
+    currentIndex = 0;
+  }
+
+  document.getElementById("popupImg").src = currentPhotos[currentIndex];
+}
+
+function prevPhoto(event) {
+
+  event.stopPropagation();
+
+  currentIndex--;
+
+  if (currentIndex < 0) {
+    currentIndex = currentPhotos.length - 1;
+  }
+
+  document.getElementById("popupImg").src = currentPhotos[currentIndex];
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+function goBack() {
+  window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
